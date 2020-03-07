@@ -5,7 +5,8 @@ import numpy as np
 from maskrcnn_benchmark.layers.misc import interpolate
 from maskrcnn_benchmark.utils import cv2_util
 import pycocotools.mask as mask_utils
-
+from PIL import Image
+import matplotlib.pyplot as plt
 # transpose
 FLIP_LEFT_RIGHT = 0
 FLIP_TOP_BOTTOM = 1
@@ -58,10 +59,8 @@ class BinaryMaskList(object):
             if len(masks) == 0:
                 masks = torch.empty([0, size[1], size[0]])  # num_instances = 0!
             elif isinstance(masks[0], torch.Tensor):
-                masks = torch.stack(masks, dim=0).clone()
+                masks = torch.stack(masks, dim=2).clone()
             elif isinstance(masks[0], dict) and "counts" in masks[0]:
-                if(isinstance(masks[0]["counts"], (list, tuple))):
-                    masks = mask_utils.frPyObjects(masks, size[1], size[0])
                 # RLE interpretation
                 rle_sizes = [tuple(inst["size"]) for inst in masks]
 
@@ -331,6 +330,10 @@ class PolygonInstance(object):
         rles = mask_utils.frPyObjects(polygons, height, width)
         rle = mask_utils.merge(rles)
         mask = mask_utils.decode(rle)
+        # plt.imshow(mask)
+        # plt.show()
+        # blank_image = np.ones(shape=[800,1333, 3], dtype=np.uint8)
+
         mask = torch.from_numpy(mask)
         return mask
 
@@ -441,8 +444,7 @@ class PolygonList(object):
             )
         else:
             size = self.size
-            masks = torch.empty([0, size[1], size[0]], dtype=torch.bool)
-
+            masks = torch.empty([0, size[1], size[0]], dtype=torch.uint8)
         return BinaryMaskList(masks, size=self.size)
 
     def __len__(self):
@@ -456,10 +458,10 @@ class PolygonList(object):
         else:
             # advanced indexing on a single dimension
             selected_polygons = []
-            if isinstance(item, torch.Tensor) and item.dtype == torch.bool:
+            if isinstance(item, torch.Tensor) and item.dtype == torch.uint8:
                 item = item.nonzero()
                 item = item.squeeze(1) if item.numel() > 0 else item
-                item = item.tolist()
+                item = item.tolist() 
             for i in item:
                 selected_polygons.append(self.polygons[i])
         return PolygonList(selected_polygons, size=self.size)
@@ -552,6 +554,7 @@ class SegmentationMask(object):
         return len(self.instances)
 
     def __getitem__(self, item):
+        # print("getitem", item)
         selected_instances = self.instances.__getitem__(item)
         return SegmentationMask(selected_instances, self.size, self.mode)
 

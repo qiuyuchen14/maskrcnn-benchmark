@@ -25,6 +25,7 @@ _C.MODEL.RPN_ONLY = False
 _C.MODEL.MASK_ON = False
 _C.MODEL.RETINANET_ON = False
 _C.MODEL.KEYPOINT_ON = False
+_C.MODEL.POSE_ON = False
 _C.MODEL.DEVICE = "cuda"
 _C.MODEL.META_ARCHITECTURE = "GeneralizedRCNN"
 _C.MODEL.CLS_AGNOSTIC_BBOX_REG = False
@@ -40,9 +41,9 @@ _C.MODEL.WEIGHT = ""
 # -----------------------------------------------------------------------------
 _C.INPUT = CN()
 # Size of the smallest side of the image during training
-_C.INPUT.MIN_SIZE_TRAIN = (800,)  # (800,)
+_C.INPUT.MIN_SIZE_TRAIN = (300,)  # (800,)
 # Maximum size of the side of the image during training
-_C.INPUT.MAX_SIZE_TRAIN = 1333
+_C.INPUT.MAX_SIZE_TRAIN = 2000
 # Size of the smallest side of the image during testing
 _C.INPUT.MIN_SIZE_TEST = 800
 # Maximum size of the side of the image during testing
@@ -55,13 +56,11 @@ _C.INPUT.PIXEL_STD = [1., 1., 1.]
 _C.INPUT.TO_BGR255 = True
 
 # Image ColorJitter
-_C.INPUT.BRIGHTNESS = 0.0
-_C.INPUT.CONTRAST = 0.0
-_C.INPUT.SATURATION = 0.0
-_C.INPUT.HUE = 0.0
+_C.INPUT.BRIGHTNESS = 0.05
+_C.INPUT.CONTRAST = 2.0
+_C.INPUT.SATURATION = 0.5
+_C.INPUT.HUE = 0.1
 
-# Flips
-_C.INPUT.HORIZONTAL_FLIP_PROB_TRAIN = 0.5
 _C.INPUT.VERTICAL_FLIP_PROB_TRAIN = 0.0
 
 # -----------------------------------------------------------------------------
@@ -214,7 +213,7 @@ _C.MODEL.ROI_BOX_HEAD.PREDICTOR = "FastRCNNPredictor"
 _C.MODEL.ROI_BOX_HEAD.POOLER_RESOLUTION = 14
 _C.MODEL.ROI_BOX_HEAD.POOLER_SAMPLING_RATIO = 0
 _C.MODEL.ROI_BOX_HEAD.POOLER_SCALES = (1.0 / 16,)
-_C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 81
+_C.MODEL.ROI_BOX_HEAD.NUM_CLASSES = 11
 # Hidden layer dimension when using an MLP for the RoI box head
 _C.MODEL.ROI_BOX_HEAD.MLP_HEAD_DIM = 1024
 # GN
@@ -255,6 +254,23 @@ _C.MODEL.ROI_KEYPOINT_HEAD.RESOLUTION = 14
 _C.MODEL.ROI_KEYPOINT_HEAD.NUM_CLASSES = 17
 _C.MODEL.ROI_KEYPOINT_HEAD.SHARE_BOX_FEATURE_EXTRACTOR = True
 
+_C.MODEL.ROI_POSE_HEAD = CN()
+_C.MODEL.ROI_POSE_HEAD.FEATURE_EXTRACTOR = "PoseRCNNFeatureExtractor"
+_C.MODEL.ROI_POSE_HEAD.PREDICTOR = "PoseRCNNPredictor"
+_C.MODEL.ROI_POSE_HEAD.POOLER_RESOLUTION = 14
+_C.MODEL.ROI_POSE_HEAD.POOLER_SAMPLING_RATIO = 0
+_C.MODEL.ROI_POSE_HEAD.POOLER_SCALES = (1.0 / 16,)
+_C.MODEL.ROI_POSE_HEAD.MLP_HEAD_DIM = 1024
+_C.MODEL.ROI_POSE_HEAD.CONV_LAYERS = tuple(512 for _ in range(8))
+_C.MODEL.ROI_POSE_HEAD.RESOLUTION = 14
+_C.MODEL.ROI_POSE_HEAD.NUM_CLASSES = 11
+_C.MODEL.ROI_POSE_HEAD.NUM_POSE_BINS = 6
+_C.MODEL.ROI_POSE_HEAD.POSTPROCESS_POSES = False
+_C.MODEL.ROI_POSE_HEAD.POSTPROCESS_POSES_THRESHOLD = 0.5
+_C.MODEL.ROI_POSE_HEAD.SHARE_BOX_FEATURE_EXTRACTOR = True
+
+
+
 # ---------------------------------------------------------------------------- #
 # ResNe[X]t options (ResNets = {ResNet, ResNeXt}
 # Note that parts of a resnet may be used for both the backbone and the head
@@ -273,16 +289,18 @@ _C.MODEL.RESNETS.WIDTH_PER_GROUP = 64
 _C.MODEL.RESNETS.STRIDE_IN_1X1 = True
 
 # Residual transformation function
+# _C.MODEL.RESNETS.TRANS_FUNC = "BottleneckWithGN"
 _C.MODEL.RESNETS.TRANS_FUNC = "BottleneckWithFixedBatchNorm"
 # ResNet's stem function (conv1 and pool1)
 _C.MODEL.RESNETS.STEM_FUNC = "StemWithFixedBatchNorm"
-
+# _C.MODEL.RESNETS.STEM_FUNC = "StemWithGN"
 # Apply dilation in stage "res5"
 _C.MODEL.RESNETS.RES5_DILATION = 1
 
 _C.MODEL.RESNETS.BACKBONE_OUT_CHANNELS = 256 * 4
 _C.MODEL.RESNETS.RES2_OUT_CHANNELS = 256
 _C.MODEL.RESNETS.STEM_OUT_CHANNELS = 64
+_C.MODEL.RESNETS.STEM_IN_CHANNELS = 4
 
 _C.MODEL.RESNETS.STAGE_WITH_DCN = (False, False, False, False)
 _C.MODEL.RESNETS.WITH_MODULATED_DCN = False
@@ -295,7 +313,7 @@ _C.MODEL.RESNETS.DEFORMABLE_GROUPS = 1
 _C.MODEL.RETINANET = CN()
 
 # This is the number of foreground classes and background.
-_C.MODEL.RETINANET.NUM_CLASSES = 81
+_C.MODEL.RETINANET.NUM_CLASSES = 11
 
 # Anchor aspect ratios to use
 _C.MODEL.RETINANET.ANCHOR_SIZES = (32, 64, 128, 256, 512)
@@ -408,13 +426,12 @@ _C.SOLVER.WARMUP_FACTOR = 1.0 / 3
 _C.SOLVER.WARMUP_ITERS = 500
 _C.SOLVER.WARMUP_METHOD = "linear"
 
-_C.SOLVER.CHECKPOINT_PERIOD = 2500
-_C.SOLVER.TEST_PERIOD = 0
+_C.SOLVER.CHECKPOINT_PERIOD = 1000
 
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
-_C.SOLVER.IMS_PER_BATCH = 16
+_C.SOLVER.IMS_PER_BATCH = 2
 
 # ---------------------------------------------------------------------------- #
 # Specific test options
@@ -425,7 +442,7 @@ _C.TEST.EXPECTED_RESULTS_SIGMA_TOL = 4
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
-_C.TEST.IMS_PER_BATCH = 8
+_C.TEST.IMS_PER_BATCH = 2
 # Number of detections per image
 _C.TEST.DETECTIONS_PER_IMG = 100
 
@@ -454,7 +471,7 @@ _C.TEST.BBOX_AUG.SCALE_H_FLIP = False
 # ---------------------------------------------------------------------------- #
 # Misc options
 # ---------------------------------------------------------------------------- #
-_C.OUTPUT_DIR = "."
+_C.OUTPUT_DIR = "/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/rgbd"
 
 _C.PATHS_CATALOG = os.path.join(os.path.dirname(__file__), "paths_catalog.py")
 

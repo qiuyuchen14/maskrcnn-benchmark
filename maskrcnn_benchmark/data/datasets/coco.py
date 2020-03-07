@@ -5,7 +5,7 @@ import torchvision
 from maskrcnn_benchmark.structures.bounding_box import BoxList
 from maskrcnn_benchmark.structures.segmentation_mask import SegmentationMask
 from maskrcnn_benchmark.structures.keypoint import PersonKeypoints
-
+# from maskrcnn_benchmark.structures.pose import ObjectPoses
 
 min_keypoints_per_image = 10
 
@@ -90,7 +90,10 @@ class COCODataset(torchvision.datasets.coco.CocoDetection):
             keypoints = [obj["keypoints"] for obj in anno]
             keypoints = PersonKeypoints(keypoints, img.size)
             target.add_field("keypoints", keypoints)
-
+        if anno and "pose" in anno[0]:
+            pose = [obj["pose"] for obj in anno]
+            # pose = ObjectPoses(pose, img.size)
+            target.add_field("pose", pose)
         target = target.clip_to_image(remove_empty=True)
 
         if self._transforms is not None:

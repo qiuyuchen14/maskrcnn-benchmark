@@ -7,6 +7,8 @@ from .lr_scheduler import WarmupMultiStepLR
 def make_optimizer(cfg, model):
     params = []
     for key, value in model.named_parameters():
+        # if "roi_heads.pose" not in key:
+        #     value.requires_grad = True
         if not value.requires_grad:
             continue
         lr = cfg.SOLVER.BASE_LR
@@ -17,7 +19,35 @@ def make_optimizer(cfg, model):
         params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
 
     optimizer = torch.optim.SGD(params, lr, momentum=cfg.SOLVER.MOMENTUM)
+
     return optimizer
+
+def make_new_optimizer(cfg, model):
+    params = []
+
+    layers = [
+                # "roi_heads.box.feature_extractor.fc7.weight",
+                # "roi_heads.box.feature_extractor.fc7.bias"
+                "roi_heads.box.predictor.bbox_pred.weight"
+                # "roi_heads.box.predictor.bbox_pred.bias",
+              ]
+    for key, value in model.named_parameters():
+        # if "roi_heads.pose" not in key:
+        #     value.requires_grad = False
+        # if key in layers:
+        #     value.requires_grad = True
+        if not value.requires_grad:
+            continue
+        lr = cfg.SOLVER.BASE_LR
+        weight_decay = cfg.SOLVER.WEIGHT_DECAY
+        if "bias" in key:
+            lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
+            weight_decay = cfg.SOLVER.WEIGHT_DECAY_BIAS
+        params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
+
+    new_optimizer = torch.optim.SGD(params, lr, momentum=cfg.SOLVER.MOMENTUM)
+
+    return new_optimizer
 
 
 def make_lr_scheduler(cfg, optimizer):

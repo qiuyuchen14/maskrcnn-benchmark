@@ -13,6 +13,7 @@ from .roi_align import roi_align
 from .roi_pool import ROIPool
 from .roi_pool import roi_pool
 from .smooth_l1_loss import smooth_l1_loss
+from .huber_loss_pose import huber_loss_pose
 from .sigmoid_focal_loss import SigmoidFocalLoss
 from .dcn.deform_conv_func import deform_conv, modulated_deform_conv
 from .dcn.deform_conv_module import DeformConv, ModulatedDeformConv, ModulatedDeformConvPack
@@ -27,6 +28,7 @@ __all__ = [
     "roi_pool",
     "ROIPool",
     "smooth_l1_loss",
+    "huber_loss_pose",
     "Conv2d",
     "DFConv2d",
     "ConvTranspose2d",

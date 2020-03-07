@@ -31,18 +31,27 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
         )
     datasets = []
     for dataset_name in dataset_list:
+        
         data = dataset_catalog.get(dataset_name)
         factory = getattr(D, data["factory"])
+
         args = data["args"]
+        
         # for COCODataset, we want to remove images without annotations
         # during training
         if data["factory"] == "COCODataset":
             args["remove_images_without_annotations"] = is_train
+
+        if data["factory"] == "KitchenDataset":
+            args["remove_images_without_annotations"] = is_train
+        
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
         args["transforms"] = transforms
         # make dataset from factory
+
         dataset = factory(**args)
+
         datasets.append(dataset)
 
     # for testing, return a list of datasets
@@ -105,7 +114,7 @@ def make_batch_data_sampler(
     return batch_sampler
 
 
-def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_for_period=False):
+def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     num_gpus = get_world_size()
     if is_train:
         images_per_batch = cfg.SOLVER.IMS_PER_BATCH
@@ -150,10 +159,10 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
     )
     DatasetCatalog = paths_catalog.DatasetCatalog
     dataset_list = cfg.DATASETS.TRAIN if is_train else cfg.DATASETS.TEST
-
+    print("datasetList", dataset_list)
     # If bbox aug is enabled in testing, simply set transforms to None and we will apply transforms later
     transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
-    datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train or is_for_period)
+    datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train)
 
     if is_train:
         # save category_id to label name mapping
@@ -161,6 +170,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
 
     data_loaders = []
     for dataset in datasets:
+        print("dataset", dataset)
         sampler = make_data_sampler(dataset, shuffle, is_distributed)
         batch_sampler = make_batch_data_sampler(
             dataset, sampler, aspect_grouping, images_per_gpu, num_iters, start_iter
@@ -175,7 +185,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0, is_
             collate_fn=collator,
         )
         data_loaders.append(data_loader)
-    if is_train or is_for_period:
+    if is_train:
         # during training, a single (possibly concatenated) data_loader is returned
         assert len(data_loaders) == 1
         return data_loaders[0]

@@ -1,12 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 from . import transforms as T
-
+from torchvision import transforms, utils
 
 def build_transforms(cfg, is_train=True):
     if is_train:
         min_size = cfg.INPUT.MIN_SIZE_TRAIN
         max_size = cfg.INPUT.MAX_SIZE_TRAIN
-        flip_horizontal_prob = cfg.INPUT.HORIZONTAL_FLIP_PROB_TRAIN
+        flip_horizontal_prob = 0.5  # cfg.INPUT.FLIP_PROB_TRAIN
         flip_vertical_prob = cfg.INPUT.VERTICAL_FLIP_PROB_TRAIN
         brightness = cfg.INPUT.BRIGHTNESS
         contrast = cfg.INPUT.CONTRAST
@@ -26,6 +26,9 @@ def build_transforms(cfg, is_train=True):
     normalize_transform = T.Normalize(
         mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD, to_bgr255=to_bgr255
     )
+    # normalize_transform = transforms.Normalize(
+    #     mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD
+    # )
     color_jitter = T.ColorJitter(
         brightness=brightness,
         contrast=contrast,
@@ -33,14 +36,33 @@ def build_transforms(cfg, is_train=True):
         hue=hue,
     )
 
+    # color_jitter = transforms.ColorJitter(
+    #     brightness=brightness,
+    #     contrast=contrast,
+    #     saturation=saturation,
+    #     hue=hue,
+    # )
+
     transform = T.Compose(
         [
             color_jitter,
+            # T.RandomRotate(25),
             T.Resize(min_size, max_size),
+            # T.RandomCrop(250, 1000),
             T.RandomHorizontalFlip(flip_horizontal_prob),
             T.RandomVerticalFlip(flip_vertical_prob),
             T.ToTensor(),
             normalize_transform,
         ]
     )
+    # transform = transforms.Compose(
+    #     [
+    #         color_jitter,
+    #         T.Resize(min_size, max_size),
+    #         T.RandomHorizontalFlip(flip_horizontal_prob),
+    #         T.RandomVerticalFlip(flip_vertical_prob),
+    #         T.ToTensor(),
+    #         normalize_transform,
+    #     ]
+    # )
     return transform

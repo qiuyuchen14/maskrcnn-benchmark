@@ -8,8 +8,8 @@ from .roi_mask_feature_extractors import make_roi_mask_feature_extractor
 from .roi_mask_predictors import make_roi_mask_predictor
 from .inference import make_roi_mask_post_processor
 from .loss import make_roi_mask_loss_evaluator
-
-
+import cv2
+import numpy as np
 def keep_only_positive_boxes(boxes):
     """
     Given a set of BoxList containing the `labels` field,
@@ -63,17 +63,25 @@ class ROIMaskHead(torch.nn.Module):
             # during training, only focus on positive boxes
             all_proposals = proposals
             proposals, positive_inds = keep_only_positive_boxes(proposals)
+
         if self.training and self.cfg.MODEL.ROI_MASK_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
             x = features
             x = x[torch.cat(positive_inds, dim=0)]
         else:
             x = self.feature_extractor(features, proposals)
+        # print(len(proposals))
         mask_logits = self.predictor(x)
-
+        # blank_image = np.ones(shape=[800,1333, 3], dtype=np.uint8)
+        #
+        # for j in range(len(proposals)):
+        #     temp = all_proposals[j]
+        #     for i in range(len(temp)):
+        #         cv2.rectangle(blank_image, (temp.bbox[i][0],temp.bbox[i][1]), (temp.bbox[i][2], temp.bbox[i][3]), (0, 0, 255), 2)
+        # cv2.imshow('image', blank_image)
+        # cv2.waitKey(10)
         if not self.training:
             result = self.post_processor(mask_logits, proposals)
             return x, result, {}
-
         loss_mask = self.loss_evaluator(proposals, mask_logits, targets)
 
         return x, all_proposals, dict(loss_mask=loss_mask)

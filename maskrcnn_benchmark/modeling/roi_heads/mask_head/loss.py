@@ -121,7 +121,7 @@ class MaskRCNNLossComputation(object):
         # accept empty tensors, so handle it separately
         if mask_targets.numel() == 0:
             return mask_logits.sum() * 0
-
+        # print(mask_logits[positive_inds, labels_pos].shape)
         mask_loss = F.binary_cross_entropy_with_logits(
             mask_logits[positive_inds, labels_pos], mask_targets
         )

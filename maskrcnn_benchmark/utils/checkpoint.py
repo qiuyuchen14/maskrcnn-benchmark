@@ -8,11 +8,12 @@ from maskrcnn_benchmark.utils.model_serialization import load_state_dict
 from maskrcnn_benchmark.utils.c2_model_loading import load_c2_format
 from maskrcnn_benchmark.utils.imports import import_file
 from maskrcnn_benchmark.utils.model_zoo import cache_url
-
+from maskrcnn_benchmark.solver import make_optimizer, make_new_optimizer
 
 class Checkpointer(object):
     def __init__(
         self,
+        cfg,
         model,
         optimizer=None,
         scheduler=None,
@@ -20,6 +21,7 @@ class Checkpointer(object):
         save_to_disk=None,
         logger=None,
     ):
+        self.cfg = cfg
         self.model = model
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -50,16 +52,22 @@ class Checkpointer(object):
         self.tag_last_checkpoint(save_file)
 
     def load(self, f=None, use_latest=True):
+        # f = '/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/renderpy150000/model_0025000.pth'
         if self.has_checkpoint() and use_latest:
             # override argument with existing checkpoint
             f = self.get_checkpoint_file()
         if not f:
             # no checkpoint could be found
             self.logger.info("No checkpoint found. Initializing model from scratch")
-            return {}
+            # f = '/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/renderpy150000/model_0025000.pth'
+
+
         self.logger.info("Loading checkpoint from {}".format(f))
         checkpoint = self._load_file(f)
+
         self._load_model(checkpoint)
+
+        self.optimizer = make_new_optimizer(self.cfg, self.model)
         if "optimizer" in checkpoint and self.optimizer:
             self.logger.info("Loading optimizer from {}".format(f))
             self.optimizer.load_state_dict(checkpoint.pop("optimizer"))
@@ -110,7 +118,7 @@ class DetectronCheckpointer(Checkpointer):
         logger=None,
     ):
         super(DetectronCheckpointer, self).__init__(
-            model, optimizer, scheduler, save_dir, save_to_disk, logger
+            cfg, model, optimizer, scheduler, save_dir, save_to_disk, logger
         )
         self.cfg = cfg.clone()
 

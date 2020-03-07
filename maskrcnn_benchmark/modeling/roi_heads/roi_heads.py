@@ -4,7 +4,7 @@ import torch
 from .box_head.box_head import build_roi_box_head
 from .mask_head.mask_head import build_roi_mask_head
 from .keypoint_head.keypoint_head import build_roi_keypoint_head
-
+from .pose_head.pose_head import build_roi_pose_head
 
 class CombinedROIHeads(torch.nn.ModuleDict):
     """
@@ -19,6 +19,8 @@ class CombinedROIHeads(torch.nn.ModuleDict):
             self.mask.feature_extractor = self.box.feature_extractor
         if cfg.MODEL.KEYPOINT_ON and cfg.MODEL.ROI_KEYPOINT_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
             self.keypoint.feature_extractor = self.box.feature_extractor
+        if cfg.MODEL.POSE_ON and cfg.MODEL.ROI_POSE_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
+            self.pose.feature_extractor = self.box.feature_extractor
 
     def forward(self, features, proposals, targets=None):
         losses = {}
@@ -52,6 +54,20 @@ class CombinedROIHeads(torch.nn.ModuleDict):
             # this makes the API consistent during training and testing
             x, detections, loss_keypoint = self.keypoint(keypoint_features, detections, targets)
             losses.update(loss_keypoint)
+
+
+        ###### Added branch: Predict pose ######
+        if self.cfg.MODEL.POSE_ON:
+            pose_features = features
+            # optimization: during training, if we share the feature extractor between
+            # the box and the mask heads, then we can reuse the features already computed
+            if (
+                self.training
+                and self.cfg.MODEL.ROI_POSE_HEAD.SHARE_BOX_FEATURE_EXTRACTOR
+            ):
+                pose_features = x
+            x, detections, loss_pose = self.pose(pose_features, detections, targets)
+            losses.update(loss_pose)
         return x, detections, losses
 
 
@@ -68,6 +84,9 @@ def build_roi_heads(cfg, in_channels):
         roi_heads.append(("mask", build_roi_mask_head(cfg, in_channels)))
     if cfg.MODEL.KEYPOINT_ON:
         roi_heads.append(("keypoint", build_roi_keypoint_head(cfg, in_channels)))
+    # Third branch: Predict joint pose: regress it to (0, 1).
+    if cfg.MODEL.POSE_ON:
+        roi_heads.append(("pose", build_roi_pose_head(cfg, in_channels)))
 
     # combine individual heads in a single module
     if roi_heads:

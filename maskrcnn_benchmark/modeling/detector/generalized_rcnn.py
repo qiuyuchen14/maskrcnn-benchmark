@@ -11,8 +11,8 @@ from maskrcnn_benchmark.structures.image_list import to_image_list
 from ..backbone import build_backbone
 from ..rpn.rpn import build_rpn
 from ..roi_heads.roi_heads import build_roi_heads
-
-
+import cv2
+import numpy as np
 class GeneralizedRCNN(nn.Module):
     """
     Main class for Generalized R-CNN. Currently supports boxes and masks.
@@ -46,10 +46,32 @@ class GeneralizedRCNN(nn.Module):
         if self.training and targets is None:
             raise ValueError("In training mode, targets should be passed")
         images = to_image_list(images)
+        # combined = to_image_list(combined)
+
+        # input_image = np.ones(shape=[images.tensors.shape[2], images.tensors.shape[3], 3], dtype=np.uint8)
+        # newimages = np.swapaxes(np.swapaxes(images.tensors[0,:,:,:].cpu().data.numpy(), 0, 2), 0, 1)
+        # for i in range(input_image.shape[2]):
+        #     input_image[:,:,i] = newimages[:,:,i]
+
         features = self.backbone(images.tensors)
+        # features_depth = self.backbone1(combined.tensors)
         proposals, proposal_losses = self.rpn(images, features, targets)
+
+        # print(targets[0].bbox)
         if self.roi_heads:
             x, result, detector_losses = self.roi_heads(features, proposals, targets)
+            # for j in range(len(result)):
+            #     temp = result[j]
+            #     for i in range(len(temp)):
+            #         cv2.rectangle(input_image, (temp.bbox[i][0],temp.bbox[i][1]), (temp.bbox[i][2], temp.bbox[i][3]), (0, 0, 255), 2)
+            # # temp1 = targets[0].bbox
+            # # for i in range(len(temp1)):
+            # #     cv2.rectangle(input_image, (temp1[i][0], temp1[i][1]), (temp1[i][2], temp1[i][3]), (0, 255, 0), 2)
+            #
+            #
+            # cv2.imshow('image', input_image)
+            # cv2.waitKey(10)
+
         else:
             # RPN-only models don't have roi_heads
             x = features

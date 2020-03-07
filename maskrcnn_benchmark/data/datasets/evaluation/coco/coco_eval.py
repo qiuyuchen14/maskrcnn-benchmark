@@ -48,6 +48,9 @@ def do_coco_evaluation(
     if 'keypoints' in iou_types:
         logger.info('Preparing keypoints results')
         coco_results['keypoints'] = prepare_for_coco_keypoint(predictions, dataset)
+    if 'poses' in iou_types:
+        logger.info('Preparing pose results')
+        coco_results['poses'] = prepare_for_pose(predictions, dataset)
 
     results = COCOResults(*iou_types)
     logger.info("Evaluating predictions")
@@ -83,6 +86,7 @@ def prepare_for_coco_detection(predictions, dataset):
 
         boxes = prediction.bbox.tolist()
         scores = prediction.get_field("scores").tolist()
+        poses = prediction.get_field("pose").tolist()
         labels = prediction.get_field("labels").tolist()
 
         mapped_labels = [dataset.contiguous_category_id_to_json_id[i] for i in labels]
@@ -183,6 +187,32 @@ def prepare_for_coco_keypoint(predictions, dataset):
             'category_id': mapped_labels[k],
             'keypoints': keypoint,
             'score': scores[k]} for k, keypoint in enumerate(keypoints)])
+    return coco_results
+
+def prepare_for_pose(predictions, dataset):
+    # assert isinstance(dataset, COCODataset)
+    coco_results = []
+    print('test')
+    for image_id, prediction in enumerate(predictions):
+        original_id = dataset.id_to_img_map[image_id]
+        if len(prediction.bbox) == 0:
+            continue
+
+        # TODO replace with get_img_info?
+        boxes = prediction.bbox.tolist()
+        scores = prediction.get_field('scores').tolist()
+        labels = prediction.get_field('labels').tolist()
+        pose = prediction.get_field('poses')
+        # pose = pose.resize((image_width, image_height))
+        # pose = pose.keypoints.view(pose.keypoints.shape[0], -1).tolist()
+
+        mapped_labels = [dataset.contiguous_category_id_to_json_id[i] for i in labels]
+
+        coco_results.extend([{
+            'image_id': original_id,
+            'category_id': mapped_labels[k],
+            'poses': pose,
+            'score': scores[k]} for k, pose in enumerate(pose)])
     return coco_results
 
 # inspired from Detectron

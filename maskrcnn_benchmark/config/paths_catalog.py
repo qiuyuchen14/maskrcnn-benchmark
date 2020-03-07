@@ -2,7 +2,7 @@
 """Centralized catalog of paths."""
 
 import os
-from copy import deepcopy
+
 
 class DatasetCatalog(object):
     DATA_DIR = "datasets"
@@ -15,6 +15,93 @@ class DatasetCatalog(object):
             "img_dir": "coco/val2017",
             "ann_file": "coco/annotations/instances_val2017.json"
         },
+        #"kitchen1_train1": {
+        #    "img_dir": "/home/zoey/nas/zoey/data/articulatedPoses/train_10kitchen",
+        #    "ann_file": "/home/zoey/nas/zoey/data/articulatedPoses/annotations_10kitchen/instances_train2019.json"
+        #},
+        "kitchen1_train1": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/renderpy/train2",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/renderpy/annotations/instances_train2.json"
+        },
+        # "kitchen1_train2": {
+        #     "img_dir": "/home/zoey/ssds/data/Kitchen/simulator/train",
+        #     "ann_file": "/home/zoey/ssds/data/Kitchen/simulator/annotations/instances_train.json"
+        # },
+        # "kitchen1_train3": {
+        #     "img_dir": "/home/zoey/ssds/data/Kitchen/simulator/rgbd3",
+        #     "ann_file": "/home/zoey/ssds/data/Kitchen/simulator/annotations/instances_rgbd3.json"
+        # },
+
+        "kitchen1_val1": {
+            "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen1/val",
+            "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen1/annotations/instances_val2019.json"
+        },
+        "kitchen1_val2": {
+            "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen2/val",
+            "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen2/annotations/instances_val2019.json"
+        },
+        "kitchen1_val3": {
+             "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen3/val",
+             "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen3/annotations/instances_val2019.json"
+        },
+        "kitchen1_val4": {
+             "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen4/val",
+             "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen4/annotations/instances_val2019.json"
+        },
+        "kitchen1_val5": {
+            "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen5/val",
+            "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen5/annotations/instances_val2019.json"
+        },
+        "kitchen1_val6": {
+            "img_dir": "/home/zoey/nas/zoey/data/articulatedPoses/train_10kitchen",
+            "ann_file": "/home/zoey/nas/zoey/data/articulatedPoses/annotations_10kitchen/instances_train2019.json"
+        },
+        "kitchen1_val7": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance1",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance1_test2.json"
+        },
+        "kitchen1_val8": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance2",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance2_test2.json"
+        },
+
+        "kitchen1_val9": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test1/distance3",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance3_test1.json"
+        },
+        "kitchen1_val10": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance4",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance4_test2.json"
+        },
+
+        "kitchen1_val11": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance5",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance5_test2.json"
+        },
+        "kitchen1_val12": {
+            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/test5",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_test5.json"
+        },
+        # "gt1": {
+        #     "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen1/val",
+        #     "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen1/annotations/instances_val2019.json"
+        # },
+        # "gt2": {
+        #     "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen2/val",
+        #     "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen2/annotations/instances_val2019.json"
+        # },
+        # "gt3": {
+        #     "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen3/val",
+        #     "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen3/annotations/instances_val2019.json"
+        # },
+        # "gt4": {
+        #     "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen4/val",
+        #     "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen4/annotations/instances_val2019.json"
+        # },
+        # "gt5": {
+        #     "img_dir": "/home/zoey/nas/zoey/data/gt_coco/kitchen5/val",
+        #     "ann_file": "/home/zoey/nas/zoey/data/gt_coco/kitchen5/annotations/instances_val2019.json"
+        # },
         "coco_2014_train": {
             "img_dir": "coco/train2014",
             "ann_file": "coco/annotations/instances_train2014.json"
@@ -92,9 +179,6 @@ class DatasetCatalog(object):
             "split": "test"
             # PASCAL VOC2012 doesn't made the test annotations available, so there's no json annotation
         },
-
-        ##############################################
-        # These ones are deprecated, should be removed
         "cityscapes_fine_instanceonly_seg_train_cocostyle": {
             "img_dir": "cityscapes/images",
             "ann_file": "cityscapes/annotations/instancesonly_filtered_gtFine_train.json"
@@ -106,47 +190,7 @@ class DatasetCatalog(object):
         "cityscapes_fine_instanceonly_seg_test_cocostyle": {
             "img_dir": "cityscapes/images",
             "ann_file": "cityscapes/annotations/instancesonly_filtered_gtFine_test.json"
-        },
-        ##############################################
-
-        "cityscapes_poly_instance_train": {
-            "img_dir": "cityscapes/leftImg8bit/",
-            "ann_dir": "cityscapes/gtFine/",
-            "split": "train",
-            "mode": "poly",
-        },
-        "cityscapes_poly_instance_val": {
-            "img_dir": "cityscapes/leftImg8bit",
-            "ann_dir": "cityscapes/gtFine",
-            "split": "val",
-            "mode": "poly",
-        },
-        "cityscapes_poly_instance_minival": {
-            "img_dir": "cityscapes/leftImg8bit",
-            "ann_dir": "cityscapes/gtFine",
-            "split": "val",
-            "mode": "poly",
-            "mini": 10,
-        },
-        "cityscapes_mask_instance_train": {
-            "img_dir": "cityscapes/leftImg8bit/",
-            "ann_dir": "cityscapes/gtFine/",
-            "split": "train",
-            "mode": "mask",
-        },
-        "cityscapes_mask_instance_val": {
-            "img_dir": "cityscapes/leftImg8bit",
-            "ann_dir": "cityscapes/gtFine",
-            "split": "val",
-            "mode": "mask",
-        },
-        "cityscapes_mask_instance_minival": {
-            "img_dir": "cityscapes/leftImg8bit",
-            "ann_dir": "cityscapes/gtFine",
-            "split": "val",
-            "mode": "mask",
-            "mini": 10,
-        },
+        }
     }
 
     @staticmethod
@@ -162,6 +206,17 @@ class DatasetCatalog(object):
                 factory="COCODataset",
                 args=args,
             )
+        if "kitchen1" in name:
+            data_dir = DatasetCatalog.DATA_DIR
+            attrs = DatasetCatalog.DATASETS[name]
+            args = dict(
+                root=os.path.join(data_dir, attrs["img_dir"]),
+                ann_file=os.path.join(data_dir, attrs["ann_file"]),
+            )
+            return dict(
+                factory="KitchenDataset",
+                args=args,
+            )
         elif "voc" in name:
             data_dir = DatasetCatalog.DATA_DIR
             attrs = DatasetCatalog.DATASETS[name]
@@ -173,12 +228,6 @@ class DatasetCatalog(object):
                 factory="PascalVOCDataset",
                 args=args,
             )
-        elif "cityscapes" in name:
-            data_dir = DatasetCatalog.DATA_DIR
-            attrs = deepcopy(DatasetCatalog.DATASETS[name])
-            attrs["img_dir"] = os.path.join(data_dir, attrs["img_dir"])
-            attrs["ann_dir"] = os.path.join(data_dir, attrs["ann_dir"])
-            return dict(factory="CityScapesDataset", args=attrs)
         raise RuntimeError("Dataset not available: {}".format(name))
 
 

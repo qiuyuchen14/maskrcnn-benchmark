@@ -53,7 +53,7 @@ class FPNPredictor(nn.Module):
             x = x.view(x.size(0), -1)
         scores = self.cls_score(x)
         bbox_deltas = self.bbox_pred(x)
-
+        
         return scores, bbox_deltas
 
 

@@ -101,6 +101,16 @@ class ColorJitter(object):
         return image, target
 
 
+# class RandomRotate(object):
+#     def __init__(self, deg):
+#         self.deg = deg
+#         self.random_rotation = torchvision.transforms.RandomRotation(self.deg)
+#
+#     def __call__(self, image, target=None):
+#         image = self.random_rotation(image)
+#         target = target.rotate(self.deg)
+#         return image, target
+
 class ToTensor(object):
     def __call__(self, image, target):
         return F.to_tensor(image), target
@@ -119,3 +129,34 @@ class Normalize(object):
         if target is None:
             return image
         return image, target
+
+
+# class RandomCrop(object):
+#     def __init__(self, min_size, max_size):
+#         self.min_size = min_size
+#         self.max_size = max_size
+#
+#     @staticmethod
+#     def get_params(img, min_size, max_size):
+#         """Get parameters for ``crop`` for a random crop.
+#         Args:
+#             img (PIL Image): Image to be cropped.
+#             output_size (tuple): Expected output size of the crop.
+#         Returns:
+#             tuple: params (i, j, h, w) to be passed to ``crop`` for random crop.
+#         """
+#         w, h = img.size
+#         th = random.randint(min_size, max_size)
+#         tw = th
+#         if w == tw and h == th:
+#             return 0, 0, h, w
+#
+#         i = random.randint(0, h - th)
+#         j = random.randint(0, w - tw)
+#         return i, j, th, tw
+#
+#     def __call__(self, image, target):
+#         i, j, h, w = self.get_params(image, self.min_size, self.max_size)
+#         image = F.crop(image, i, j ,h, w)
+#         target = target.crop(i, j, h, w)
+#         return image, target

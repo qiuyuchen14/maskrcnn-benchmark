@@ -6,6 +6,7 @@ import os
 import torch
 from tqdm import tqdm
 
+from maskrcnn_benchmark.config import cfg
 from maskrcnn_benchmark.data.datasets.evaluation import evaluate
 from ..utils.comm import is_main_process, get_world_size
 from ..utils.comm import all_gather
@@ -14,21 +15,22 @@ from ..utils.timer import Timer, get_time_str
 from .bbox_aug import im_detect_bbox_aug
 
 
-def compute_on_dataset(model, data_loader, device, bbox_aug, timer=None):
+def compute_on_dataset(model, data_loader, device, timer=None):
     model.eval()
     results_dict = {}
     cpu_device = torch.device("cpu")
     for _, batch in enumerate(tqdm(data_loader)):
         images, targets, image_ids = batch
+
         with torch.no_grad():
             if timer:
                 timer.tic()
-            if bbox_aug:
+            if cfg.TEST.BBOX_AUG.ENABLED:
                 output = im_detect_bbox_aug(model, images, device)
             else:
                 output = model(images.to(device))
             if timer:
-                if not device.type == 'cpu':
+                if not cfg.MODEL.DEVICE == 'cpu':
                     torch.cuda.synchronize()
                 timer.toc()
             output = [o.to(cpu_device) for o in output]
@@ -66,7 +68,6 @@ def inference(
         dataset_name,
         iou_types=("bbox",),
         box_only=False,
-        bbox_aug=False,
         device="cuda",
         expected_results=(),
         expected_results_sigma_tol=4,
@@ -81,7 +82,7 @@ def inference(
     total_timer = Timer()
     inference_timer = Timer()
     total_timer.tic()
-    predictions = compute_on_dataset(model, data_loader, device, bbox_aug, inference_timer)
+    predictions = compute_on_dataset(model, data_loader, device, inference_timer)
     # wait for all processes to complete before measuring the time
     synchronize()
     total_time = total_timer.toc()
