@@ -69,8 +69,8 @@ INPUT:
 DATALOADER:
   SIZE_DIVISIBILITY: 32
 SOLVER:
-  BASE_LR: 0.01
+  BASE_LR: 0.0025
   WEIGHT_DECAY: 0.0001
-  STEPS: (0, 15000, 20000)
-  MAX_ITER: 25000
-OUTPUT_DIR: "/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/data1_depth"
+  STEPS: (0, 30000, 40000)
+  MAX_ITER: 60000
+OUTPUT_DIR: "/home/zoey/nas/zoey/github/fork/maskrcnn-benchmark/checkpoints/data1_depth"

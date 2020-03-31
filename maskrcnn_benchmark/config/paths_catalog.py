@@ -66,8 +66,8 @@ class DatasetCatalog(object):
         },
 
         "kitchen1_val9": {
-            "img_dir": "/home/zoey/ssds/data/Kitchen/renderpy/train4/images",
-            "ann_file": "/home/zoey/ssds/data/Kitchen/renderpy/annotations/instances_train4.json"
+            "img_dir": "/gscratch/cse/qiuyuc/data/data6/images",
+            "ann_file": "//gscratch/cse/qiuyuc/data/data6/annotations/instances_train.json"
         },
         "kitchen1_val10": {
             "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance4",
