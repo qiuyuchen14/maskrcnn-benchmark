@@ -62,8 +62,8 @@ MODEL:
   DBBOXFeature_ON: True
 
 DATASETS:
-  TRAIN: ('kitchen1_val8',)
-  TEST: ('kitchen1_val8',)
+  TRAIN: ('kitchen1_val9',)
+  TEST: ('kitchen1_val9',)
 INPUT:
   MIN_SIZE_TRAIN: (640, 672, 704, 736, 768, 800)
 DATALOADER:
