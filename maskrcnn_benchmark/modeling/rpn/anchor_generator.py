@@ -113,7 +113,9 @@ class AnchorGenerator(nn.Module):
         grid_sizes = [feature_map.shape[-2:] for feature_map in feature_maps]
         anchors_over_all_feature_maps = self.grid_anchors(grid_sizes)
         anchors = []
+        # print(image_list.image_sizes)
         for i, (image_height, image_width) in enumerate(image_list.image_sizes):
+            # print(image_height)
             anchors_in_image = []
             for anchors_per_feature_map in anchors_over_all_feature_maps:
                 boxlist = BoxList(

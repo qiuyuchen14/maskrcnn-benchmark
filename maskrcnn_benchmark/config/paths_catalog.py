@@ -57,17 +57,17 @@ class DatasetCatalog(object):
             "ann_file": "/home/zoey/nas/zoey/data/articulatedPoses/annotations_10kitchen/instances_train2019.json"
         },
         "kitchen1_val7": {
-            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance1",
-            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance1_test2.json"
+            "img_dir": "/home/zoey/nas/zoey/data/articulatedPoses/val_10kitchen",
+            "ann_file": "/home/zoey/nas/zoey/data/articulatedPoses/annotations_10kitchen/instances_val2019.json"
         },
         "kitchen1_val8": {
-            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance2",
-            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance2_test2.json"
+            "img_dir": "/home/zoey/ssds/data/Kitchen/data1/images",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/data1/annotations/instances_train.json"
         },
 
         "kitchen1_val9": {
-            "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test1/distance3",
-            "ann_file": "/home/zoey/ssds/data/Kitchen/robot_simulator/annotations/instances_distance3_test1.json"
+            "img_dir": "/home/zoey/ssds/data/Kitchen/renderpy/train4/images",
+            "ann_file": "/home/zoey/ssds/data/Kitchen/renderpy/annotations/instances_train4.json"
         },
         "kitchen1_val10": {
             "img_dir": "/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance4",

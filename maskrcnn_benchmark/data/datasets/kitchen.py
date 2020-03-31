@@ -11,6 +11,7 @@ from torchvision.transforms import functional as F
 min_keypoints_per_image = 10
 from PIL import Image
 import math
+import scipy.misc
 
 def _count_visible_keypoints(anno):
     return sum(sum(1 for v in ann["keypoints"][2::3] if v > 0) for ann in anno)
@@ -39,11 +40,10 @@ def has_valid_annotation(anno):
 
 
 class KitchenDataset(torchvision.datasets.coco.CocoDetection):
-    def __init__(self, ann_file, root, remove_images_without_annotations, transforms=None):
+    def __init__(self, ann_file, root, remove_images_without_annotations, transforms=None, depth_on=True):
         super(KitchenDataset, self).__init__(root, ann_file)
         # sort indices for reproducible results
         self.ids = sorted(self.ids)
-
         # filter images without detection annotations
         if remove_images_without_annotations:
             ids = []
@@ -64,30 +64,33 @@ class KitchenDataset(torchvision.datasets.coco.CocoDetection):
         }
         self.id_to_img_map = {k: v for k, v in enumerate(self.ids)}
         self._transforms = transforms
+        self.depth_on = depth_on
 
     def __getitem__(self, idx):
         img, anno = super(KitchenDataset, self).__getitem__(idx)
-
         # loading depth images:
 
-        # depth1 = np.load("/home/zoey/ssds/data/Kitchen/simulator/rgbd/ADE_val_depth{0}.npy".format(idx+1))
+        depth = np.repeat(np.zeros((img.size[1], img.size[0], 1)), 3, axis=2)
 
-        # imgWidth, imgHeight = 640, 480
-        # fov, aspect, nearplane, farplane = 45, imgWidth / imgHeight, 0.01, 100
-        # depth = farplane * nearplane / (farplane - (farplane - nearplane) *depth1)
+        if self.depth_on:
+            depth = np.load("/home/zoey/ssds/data/Kitchen/data1/depth/frame{0}.npy".format(idx+1))
+            # fov, aspect, nearplane, farplane = 45, imgWidth / imgHeight, 0.01, 100
+            # depth = farplane * nearplane / (farplane - (farplane - nearplane) *depth1)
+            # TODO: fix the max value
+            max_depth = 5
+            min_depth = 0.01
+            depth = (depth-min_depth)/(max_depth - min_depth)
+            depth = np.repeat(depth, 3, axis=2)
 
         # filter crowd annotations
         # TODO might be better to add an extra field
         anno = [obj for obj in anno if obj["iscrowd"] == 0]
 
         boxes = [obj["bbox"] for obj in anno]
-        # if len(boxes)>100:
-        #     print(len(boxes), idx)
 
 
         boxes = torch.as_tensor(boxes).reshape(-1, 4)  # guard against no boxes
         target = BoxList(boxes, img.size, mode="xywh").convert("xyxy")
-        # print(target)
 
         classes = [obj["category_id"] for obj in anno]
 
@@ -119,16 +122,23 @@ class KitchenDataset(torchvision.datasets.coco.CocoDetection):
         #     target.add_field("pose", poses)
 
         target = target.clip_to_image(remove_empty=True)
-        # img = np.array(img)
+
         if self._transforms is not None:
 
-            img, target = self._transforms(img, target)
-
-        # normed_depth = F.to_tensor(depth)/5
-        # img = torch.cat((normed_depth, img))
+            img, depth, target = self._transforms(img, depth, target)
 
 
-        return img, target, idx
+        if self.depth_on:
+            depth = depth * 255 - [102.9801, 115.9465, 122.7717]
+
+            depth = torch.from_numpy(depth.copy())
+            depth = depth.permute(2, 0, 1)
+            
+        if not self.depth_on:
+            depth = torch.from_numpy(depth.copy())
+            depth = depth.permute(2, 0, 1)
+
+        return img, target, depth, idx
 
     def get_img_info(self, index):
         img_id = self.id_to_img_map[index]

@@ -10,7 +10,7 @@ from maskrcnn_benchmark.utils.comm import get_world_size
 from maskrcnn_benchmark.utils.metric_logger import MetricLogger
 
 from apex import amp
-
+from maskrcnn_benchmark.structures.image_list import to_image_list
 def reduce_loss_dict(loss_dict):
     """
     Reduce the loss dictionary from all processes so that process with rank
@@ -44,7 +44,7 @@ def do_train(
     checkpointer,
     device,
     checkpoint_period,
-    arguments,
+    arguments
 ):
     logger = logging.getLogger("maskrcnn_benchmark.trainer")
     logger.info("Start training")
@@ -55,7 +55,7 @@ def do_train(
     start_training_time = time.time()
     end = time.time()
 
-    for iteration, (images, targets, _) in enumerate(data_loader, start_iter):
+    for iteration, (images, targets, depth, _) in enumerate(data_loader, start_iter):
 
         if any(len(target) < 1 for target in targets):
             logger.error(f"Iteration={iteration + 1} || Image Ids used for training {_} || targets Length={[len(target) for target in targets]}" )
@@ -65,12 +65,16 @@ def do_train(
         arguments["iteration"] = iteration
 
         scheduler.step()
-
         images = images.to(device)
+        # print("images", images.tensors.shape)
+        # print("depths",depth.tensors.shape)
+        depth = to_image_list(depth)
+        depth = depth.to(device)
 
         targets = [target.to(device) for target in targets]
+        # print("target",targets)
 
-        loss_dict = model(images, targets)
+        loss_dict = model(images, depth, targets)
 
         losses = sum(loss for loss in loss_dict.values())
 
@@ -112,6 +116,7 @@ def do_train(
                     memory=torch.cuda.max_memory_allocated() / 1024.0 / 1024.0,
                 )
             )
+
         if iteration % checkpoint_period == 0:
             checkpointer.save("model_{:07d}".format(iteration), **arguments)
         if iteration == max_iter:

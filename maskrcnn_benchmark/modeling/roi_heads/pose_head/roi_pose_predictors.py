@@ -32,6 +32,7 @@ class FPNPredictor(nn.Module):
         num_bins = cfg.MODEL.ROI_POSE_HEAD.NUM_POSE_BINS
         representation_size = in_channels
 
+
         self.pose_predictor = nn.Linear(representation_size, num_classes)
         # self.pose_cls = nn.Linear(num_classes, num_bins)
 

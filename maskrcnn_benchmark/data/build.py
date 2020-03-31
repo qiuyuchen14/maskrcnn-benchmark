@@ -15,7 +15,7 @@ from .collate_batch import BatchCollator, BBoxAugCollator
 from .transforms import build_transforms
 
 
-def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
+def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True, depth_on=True):
     """
     Arguments:
         dataset_list (list[str]): Contains the names of the datasets, i.e.,
@@ -44,10 +44,12 @@ def build_dataset(dataset_list, transforms, dataset_catalog, is_train=True):
 
         if data["factory"] == "KitchenDataset":
             args["remove_images_without_annotations"] = is_train
+
         
         if data["factory"] == "PascalVOCDataset":
             args["use_difficult"] = not is_train
         args["transforms"] = transforms
+        args["depth_on"] = depth_on
         # make dataset from factory
 
         dataset = factory(**args)
@@ -162,7 +164,7 @@ def make_data_loader(cfg, is_train=True, is_distributed=False, start_iter=0):
     print("datasetList", dataset_list)
     # If bbox aug is enabled in testing, simply set transforms to None and we will apply transforms later
     transforms = None if not is_train and cfg.TEST.BBOX_AUG.ENABLED else build_transforms(cfg, is_train)
-    datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train)
+    datasets = build_dataset(dataset_list, transforms, DatasetCatalog, is_train, cfg.MODEL.DEPTH_ON)
 
     if is_train:
         # save category_id to label name mapping

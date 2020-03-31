@@ -20,6 +20,8 @@ class Checkpointer(object):
         save_dir="",
         save_to_disk=None,
         logger=None,
+        isrgb=True,
+        isdepth=False
     ):
         self.cfg = cfg
         self.model = model
@@ -30,6 +32,8 @@ class Checkpointer(object):
         if logger is None:
             logger = logging.getLogger(__name__)
         self.logger = logger
+        self.isrgb = isrgb
+        self.isdepth = isdepth
 
     def save(self, name, **kwargs):
         if not self.save_dir:
@@ -61,7 +65,7 @@ class Checkpointer(object):
             self.logger.info("No checkpoint found. Initializing model from scratch")
             # f = '/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/renderpy150000/model_0025000.pth'
 
-
+        # return {}
         self.logger.info("Loading checkpoint from {}".format(f))
         checkpoint = self._load_file(f)
 
@@ -79,19 +83,35 @@ class Checkpointer(object):
         return checkpoint
 
     def has_checkpoint(self):
-        save_file = os.path.join(self.save_dir, "last_checkpoint")
+        if self.isrgb:
+            save_file = os.path.join(self.save_dir, "last_checkpoint_rgb")
+        if self.isdepth:
+            save_file = os.path.join(self.save_dir, "last_checkpoint_depth")
         return os.path.exists(save_file)
 
     def get_checkpoint_file(self):
-        save_file = os.path.join(self.save_dir, "last_checkpoint")
-        try:
-            with open(save_file, "r") as f:
-                last_saved = f.read()
-                last_saved = last_saved.strip()
-        except IOError:
-            # if file doesn't exist, maybe because it has just been
-            # deleted by a separate process
-            last_saved = ""
+        if self.isrgb:
+            import pdb
+            pdb.set_trace()
+            save_file_rgb = os.path.join(self.save_dir, "last_checkpoint_rgb")
+            try:
+                with open(save_file_rgb, "r") as f:
+                    last_saved = f.read()
+                    last_saved = last_saved.strip()
+            except IOError:
+                # if file doesn't exist, maybe because it has just been
+                # deleted by a separate process
+                last_saved = ""
+        if self.isdepth:
+            save_file_rgb = os.path.join(self.save_dir, "last_checkpoint_depth")
+            try:
+                with open(save_file_rgb, "r") as f:
+                    last_saved = f.read()
+                    last_saved = last_saved.strip()
+            except IOError:
+                # if file doesn't exist, maybe because it has just been
+                # deleted by a separate process
+                last_saved = ""
         return last_saved
 
     def tag_last_checkpoint(self, last_filename):
@@ -116,9 +136,11 @@ class DetectronCheckpointer(Checkpointer):
         save_dir="",
         save_to_disk=None,
         logger=None,
+        isrgb=True,
+        isdepth=False
     ):
         super(DetectronCheckpointer, self).__init__(
-            cfg, model, optimizer, scheduler, save_dir, save_to_disk, logger
+            cfg, model, optimizer, scheduler, save_dir, save_to_disk, logger,  isrgb, isdepth
         )
         self.cfg = cfg.clone()
 

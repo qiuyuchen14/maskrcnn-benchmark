@@ -22,11 +22,12 @@ class CombinedROIHeads(torch.nn.ModuleDict):
         if cfg.MODEL.POSE_ON and cfg.MODEL.ROI_POSE_HEAD.SHARE_BOX_FEATURE_EXTRACTOR:
             self.pose.feature_extractor = self.box.feature_extractor
 
-    def forward(self, features, proposals, targets=None):
+    def forward(self, features, coarse_feature, depth_features, depth_coarse, proposals, targets=None):
         losses = {}
         # TODO rename x to roi_box_features, if it doesn't increase memory consumption
-        x, detections, loss_box = self.box(features, proposals, targets)
+        x, detections, loss_box = self.box(features, coarse_feature,  depth_features, depth_coarse, proposals, targets)
         losses.update(loss_box)
+
         if self.cfg.MODEL.MASK_ON:
             mask_features = features
             # optimization: during training, if we share the feature extractor between
@@ -38,7 +39,9 @@ class CombinedROIHeads(torch.nn.ModuleDict):
                 mask_features = x
             # During training, self.box() will return the unaltered proposals as "detections"
             # this makes the API consistent during training and testing
-            x, detections, loss_mask = self.mask(mask_features, detections, targets)
+
+            x, detections, loss_mask = self.mask(features, detections, targets)
+
             losses.update(loss_mask)
 
         if self.cfg.MODEL.KEYPOINT_ON:
@@ -66,7 +69,9 @@ class CombinedROIHeads(torch.nn.ModuleDict):
                 and self.cfg.MODEL.ROI_POSE_HEAD.SHARE_BOX_FEATURE_EXTRACTOR
             ):
                 pose_features = x
-            x, detections, loss_pose = self.pose(pose_features, detections, targets)
+
+            x, detections, loss_pose = self.pose(features, detections, targets)
+
             losses.update(loss_pose)
         return x, detections, losses
 

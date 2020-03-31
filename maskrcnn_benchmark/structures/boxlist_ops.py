@@ -112,6 +112,7 @@ def cat_boxlist(bboxes):
     assert all(isinstance(bbox, BoxList) for bbox in bboxes)
 
     size = bboxes[0].size
+
     assert all(bbox.size == size for bbox in bboxes)
 
     mode = bboxes[0].mode

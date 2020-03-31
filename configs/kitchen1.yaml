@@ -1,12 +1,15 @@
 MODEL:
   META_ARCHITECTURE: "GeneralizedRCNN"
   WEIGHT: "catalog://ImageNetPretrained/MSRA/R-50"
+
 #  WEIGHT: "/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/finetune/model_0000000.pth"
   BACKBONE:
     CONV_BODY: "R-50-FPN"
   RESNETS:
     BACKBONE_OUT_CHANNELS: 256
     STEM_IN_CHANNELS: 3
+#    STEM_DIN_CHANNELS: 1
+    STEM_RGBDIN_CHANNELS: 6
   RPN:
     USE_FPN: True
     ANCHOR_STRIDE: (4, 8, 16, 32, 64)
@@ -32,7 +35,7 @@ MODEL:
     POOLER_SAMPLING_RATIO: 2
     RESOLUTION: 28
     SHARE_BOX_FEATURE_EXTRACTOR: False
-  MASK_ON: True
+
   ROI_POSE_HEAD:
     POOLER_SCALES: (0.25, 0.125, 0.0625, 0.03125)
     FEATURE_EXTRACTOR: "FPN2MLPFeatureExtractor"
@@ -43,17 +46,31 @@ MODEL:
     SHARE_BOX_FEATURE_EXTRACTOR: False
     NUM_CLASSES: 11
     NUM_POSE_BINS: 6
+
+  # Main branches
+  RGB_ON: False
+  COARSE_ON: False
+  BBOXFeature_ON: False
+  #Main heads
   POSE_ON: True
+  MASK_ON: True
+  #Pose regression or classification
+  REGRESSION_ON: False
+  # Use for Ablation study: depth stream.
+  DEPTH_ON: True
+  DCOARSE_ON: True
+  DBBOXFeature_ON: True
+
 DATASETS:
-  TRAIN: ('kitchen1_val6','kitchen1_train1', )
-  TEST: ('kitchen1_val1',)
+  TRAIN: ('kitchen1_val8',)
+  TEST: ('kitchen1_val8',)
 INPUT:
   MIN_SIZE_TRAIN: (640, 672, 704, 736, 768, 800)
 DATALOADER:
   SIZE_DIVISIBILITY: 32
 SOLVER:
-  BASE_LR: 0.005
+  BASE_LR: 0.01
   WEIGHT_DECAY: 0.0001
   STEPS: (0, 15000, 20000)
-  MAX_ITER: 30000
-OUTPUT_DIR: "/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/combined_pose1"
+  MAX_ITER: 25000
+OUTPUT_DIR: "/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/data1_depth"

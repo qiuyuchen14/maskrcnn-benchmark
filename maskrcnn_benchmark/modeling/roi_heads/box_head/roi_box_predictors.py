@@ -37,6 +37,16 @@ class FPNPredictor(nn.Module):
         super(FPNPredictor, self).__init__()
         num_classes = cfg.MODEL.ROI_BOX_HEAD.NUM_CLASSES
         representation_size = in_channels
+        if cfg.MODEL.COARSE_ON and not cfg.MODEL.BBOXFeature_ON:
+            representation_size =2048#in_channels
+        if cfg.MODEL.COARSE_ON and cfg.MODEL.BBOXFeature_ON:
+            representation_size = 3072  # in_channels
+        if cfg.MODEL.DCOARSE_ON and not cfg.MODEL.DBBOXFeature_ON:
+            representation_size =2048#in_channels
+        if cfg.MODEL.DCOARSE_ON and cfg.MODEL.DBBOXFeature_ON:
+            representation_size = 3072  # in_channels
+        if cfg.MODEL.RGB_ON and cfg.MODEL.DEPTH_ON:
+            representation_size = 3072*2  # in_channels
 
         self.cls_score = nn.Linear(representation_size, num_classes)
         num_bbox_reg_classes = 2 if cfg.MODEL.CLS_AGNOSTIC_BBOX_REG else num_classes

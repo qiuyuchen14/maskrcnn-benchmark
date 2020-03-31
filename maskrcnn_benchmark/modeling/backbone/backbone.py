@@ -72,8 +72,11 @@ def build_resnet_fpn_p3p7_backbone(cfg):
 
 
 def build_backbone(cfg):
+
     assert cfg.MODEL.BACKBONE.CONV_BODY in registry.BACKBONES, \
         "cfg.MODEL.BACKBONE.CONV_BODY: {} are not registered in registry".format(
             cfg.MODEL.BACKBONE.CONV_BODY
         )
+
     return registry.BACKBONES[cfg.MODEL.BACKBONE.CONV_BODY](cfg)
+

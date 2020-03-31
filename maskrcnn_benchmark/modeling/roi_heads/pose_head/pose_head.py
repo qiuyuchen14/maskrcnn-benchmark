@@ -63,8 +63,6 @@ class ROIPoseHead(torch.nn.Module):
             with torch.no_grad():
                 proposals = self.loss_evaluator.subsample(proposals, targets)
 
-
-
         # # change proposals to 4 proposals
         # outputs = []
         # proposals1 = proposals.copy()

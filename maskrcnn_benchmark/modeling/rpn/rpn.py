@@ -152,8 +152,10 @@ class RPNModule(torch.nn.Module):
             losses (dict[Tensor]): the losses for the model during training. During
                 testing, it is an empty dict.
         """
+
         objectness, rpn_box_regression = self.head(features)
         anchors = self.anchor_generator(images, features)
+
 
         if self.training:
             return self._forward_train(anchors, objectness, rpn_box_regression, targets)
@@ -170,7 +172,9 @@ class RPNModule(torch.nn.Module):
         else:
             # For end-to-end models, anchors must be transformed into boxes and
             # sampled into a training batch.
+            # print(anchors[0].shape, targets[0].shape)
             with torch.no_grad():
+
                 boxes = self.box_selector_train(
                     anchors, objectness, rpn_box_regression, targets
                 )

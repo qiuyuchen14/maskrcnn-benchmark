@@ -125,6 +125,7 @@ class RetinaNetModule(torch.nn.Module):
                 testing, it is an empty dict.
         """
         box_cls, box_regression = self.head(features)
+        # print(images.tensors.shape)
         anchors = self.anchor_generator(images, features)
  
         if self.training:

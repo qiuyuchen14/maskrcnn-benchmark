@@ -65,6 +65,8 @@ class RPNPostProcessor(torch.nn.Module):
         # so we need to add a dummy for objectness that's missing
         for gt_box in gt_boxes:
             gt_box.add_field("objectness", torch.ones(len(gt_box), device=device))
+        # print("gt_boxes", gt_boxes)
+        # print("proposals", proposals)
 
         proposals = [
             cat_boxlist((proposal, gt_box))
@@ -147,6 +149,7 @@ class RPNPostProcessor(torch.nn.Module):
 
         # append ground-truth bboxes to proposals
         if self.training and targets is not None:
+
             boxlists = self.add_gt_proposals(boxlists, targets)
 
         return boxlists

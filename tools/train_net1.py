@@ -6,6 +6,7 @@ Basic training script for PyTorch
 # Set up custom environment before nearly anything else is imported
 # NOTE: this should be the first import (no not reorder)
 import sys
+
 sys.path.append("/home/zoey/nas/zoey/github/maskrcnn-benchmark")
 from maskrcnn_benchmark.utils.env import setup_environment  # noqa F401 isort:skip
 
@@ -27,6 +28,7 @@ from maskrcnn_benchmark.utils.imports import import_file
 from maskrcnn_benchmark.utils.logger import setup_logger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir, save_config
 from PIL import ImageFile
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 # See if we can use apex.DistributedDataParallel instead of the torch default,
 # and enable mixed-precision via apex.amp
@@ -42,24 +44,18 @@ def train(cfg, local_rank, distributed):
     # new = {"model": original["model"]}
     # torch.save(new, '/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/finetune/model_0000000.pth')
 
+    model = build_detection_model(cfg)
+
+    device = torch.device(cfg.MODEL.DEVICE)
+    model.to(device)
+
+    optimizer = make_optimizer(cfg, model)
+    scheduler = make_lr_scheduler(cfg, optimizer)
+
     # Initialize mixed-precision training
     use_mixed_precision = cfg.DTYPE == "float16"
     amp_opt_level = 'O1' if use_mixed_precision else 'O0'
-
-    model = build_detection_model(cfg)
-    device = torch.device(cfg.MODEL.DEVICE)
-    model.to(device)
-    optimizer = make_optimizer(cfg, model)
-    scheduler = make_lr_scheduler(cfg, optimizer)
     model, optimizer = amp.initialize(model, optimizer, opt_level=amp_opt_level)
-
-    # if cfg.MODEL.DEPTH_ON == True:
-    #     model_depth = build_detection_model(cfg)
-    #     device = torch.device(cfg.MODEL.DEVICE)
-    #     model_depth.to(device)
-    #     optimizer_depth = make_optimizer(cfg, model_depth)
-    #     scheduler_depth = make_lr_scheduler(cfg, optimizer_depth)
-    #     model_depth, optimizer_depth = amp.initialize(model_depth, optimizer_depth, opt_level=amp_opt_level)
 
     if distributed:
         model = torch.nn.parallel.DistributedDataParallel(
@@ -71,11 +67,17 @@ def train(cfg, local_rank, distributed):
     arguments = {}
     arguments["iteration"] = 0
 
-
     output_dir = cfg.OUTPUT_DIR
 
     save_to_disk = get_rank() == 0
+    checkpointer = DetectronCheckpointer(
+        cfg, model, optimizer, scheduler, output_dir, save_to_disk
+    )
 
+    extra_checkpoint_data = checkpointer.load(cfg.MODEL.WEIGHT)
+    # extra_checkpoint_data = checkpointer.load('/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/renderpy150000/model_0025000.pth')
+    arguments.update(extra_checkpoint_data)
+    # print(cfg)
     data_loader = make_data_loader(
         cfg,
         is_train=True,
@@ -83,12 +85,6 @@ def train(cfg, local_rank, distributed):
         start_iter=arguments["iteration"],
     )
 
-    checkpointer = DetectronCheckpointer(
-        cfg, model, optimizer, scheduler, output_dir, save_to_disk, logger=None, isrgb=True, isdepth=True
-    )
-    extra_checkpoint_data = checkpointer.load(cfg.MODEL.WEIGHT)
-    # extra_checkpoint_data = checkpointer.load('/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/renderpy150000/model_0025000.pth')
-    arguments.update(extra_checkpoint_data)
     checkpoint_period = cfg.SOLVER.CHECKPOINT_PERIOD
 
     do_train(
@@ -99,9 +95,8 @@ def train(cfg, local_rank, distributed):
         checkpointer,
         device,
         checkpoint_period,
-        arguments
+        arguments,
     )
-
 
     return model
 

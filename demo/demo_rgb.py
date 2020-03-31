@@ -24,7 +24,7 @@ cfg.merge_from_list(["MODEL.DEVICE", "cpu"])
 kitchen_demo = KitchenDemo(
     cfg,
     min_image_size=800,
-    confidence_threshold=0.7,
+    confidence_threshold=0.8,
     show_mask_heatmaps=False,
 )
 
@@ -51,15 +51,15 @@ def imshow(img):
     # path, dirs, files = next(os.walk("/home/zoey/nas/zoey/data/gt_coco/kitchen{0}/val".format(kitid+1)))
 # path, dirs, files = next(os.walk("/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance{0}".format(3)))
 #     file_count = len(files)
-for id in range(1, 500):
+for id in range(50):
     # image = cv2.imread("/home/zoey/ssds/data/Kitchen/robot_simulator/distance_test2/distance{0}/frame{1}.png".format(3, id+21))
-    image = cv2.imread("/home/zoey/nas/zoey/data/gt_coco/kitchen{0}/val/frame{1}.png".format(1, id+1))
-    # image = cv2.imread("/home/zoey/ssds/data/Kitchen/renderpy/train2/frame{0}.png".format(id + 1))
+    # image = cv2.imread("/home/zoey/ssds/data/Kitchen/robot_test/hurb3/frame{0}.png".format(id+1))
+    image = cv2.imread("/home/zoey/nas/zoey/data/gt_coco/kitchen2/val/frame{0}.png".format(id + 1))
     # image = np.array(image)[:, :, [2, 1, 0]]
     # compute predictions
     predictions = kitchen_demo.run_on_opencv_image(image, id+1)
     # plt.savefig("/home/zoey/nas/zoey/data/pred_gt_coco1/kitchen{0}/frame{1}.png".format(kitid+1, id+1), predictions[:, :, [2, 1, 0]])
-    cv2.imwrite("/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/combined_renderpy/prediction/hurb1/frame{0}.png".format(id+1), predictions)
+    cv2.imwrite("/home/zoey/nas/zoey/github/maskrcnn-benchmark/checkpoints/combined_renderpy/prediction/gt2_2/frame{0}.png".format(id+1), predictions)
     cfg.merge_from_list(["MODEL.DEVICE", "cuda"])
     cfg.merge_from_list(["MODEL.MASK_ON", False])
 

@@ -58,7 +58,6 @@ class MaskRCNNFPNFeatureExtractor(nn.Module):
 
     def forward(self, x, proposals):
         x = self.pooler(x, proposals)
-
         for layer_name in self.blocks:
             x = F.relu(getattr(self, layer_name)(x))
 
@@ -66,6 +65,7 @@ class MaskRCNNFPNFeatureExtractor(nn.Module):
 
 
 def make_roi_mask_feature_extractor(cfg, in_channels):
+
     func = registry.ROI_MASK_FEATURE_EXTRACTORS[
         cfg.MODEL.ROI_MASK_HEAD.FEATURE_EXTRACTOR
     ]

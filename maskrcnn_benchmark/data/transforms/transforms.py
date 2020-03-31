@@ -4,16 +4,16 @@ import random
 import torch
 import torchvision
 from torchvision.transforms import functional as F
-
-
+import torch.nn.functional as F1
+import numpy
 class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
 
-    def __call__(self, image, target):
+    def __call__(self, image, depth, target):
         for t in self.transforms:
-            image, target = t(image, target)
-        return image, target
+            image, depth, target = t(image, depth, target)
+        return image, depth, target
 
     def __repr__(self):
         format_string = self.__class__.__name__ + "("
@@ -54,34 +54,38 @@ class Resize(object):
 
         return (oh, ow)
 
-    def __call__(self, image, target=None):
+    def __call__(self, image, depth, target=None):
         size = self.get_size(image.size)
         image = F.resize(image, size)
+        x = np.arange()
+        depth = scipy.interpolate.interp2d(depth)
         if target is None:
             return image
         target = target.resize(image.size)
-        return image, target
+        return image, depth, target
 
 
 class RandomHorizontalFlip(object):
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, image, target):
+    def __call__(self, image, depth, target):
         if random.random() < self.prob:
             image = F.hflip(image)
+            depth = numpy.flip(depth, 1)#F.hflip(depth)
             target = target.transpose(0)
-        return image, target
+        return image, depth, target
 
 class RandomVerticalFlip(object):
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, image, target):
+    def __call__(self, image, depth, target):
         if random.random() < self.prob:
             image = F.vflip(image)
+            depth = numpy.flip(depth, 0)#F.vflip(depth)
             target = target.transpose(1)
-        return image, target
+        return image, depth, target
 
 class ColorJitter(object):
     def __init__(self,
@@ -96,9 +100,9 @@ class ColorJitter(object):
             saturation=saturation,
             hue=hue,)
 
-    def __call__(self, image, target):
+    def __call__(self, image, depth, target):
         image = self.color_jitter(image)
-        return image, target
+        return image, depth, target
 
 
 # class RandomRotate(object):
@@ -112,8 +116,8 @@ class ColorJitter(object):
 #         return image, target
 
 class ToTensor(object):
-    def __call__(self, image, target):
-        return F.to_tensor(image), target
+    def __call__(self, image, depth, target):
+        return F.to_tensor(image), depth, target
 
 
 class Normalize(object):
@@ -122,13 +126,13 @@ class Normalize(object):
         self.std = std
         self.to_bgr255 = to_bgr255
 
-    def __call__(self, image, target=None):
+    def __call__(self, image, depth, target=None):
         if self.to_bgr255:
             image = image[[2, 1, 0]] * 255
         image = F.normalize(image, mean=self.mean, std=self.std)
         if target is None:
             return image
-        return image, target
+        return image, depth, target
 
 
 # class RandomCrop(object):

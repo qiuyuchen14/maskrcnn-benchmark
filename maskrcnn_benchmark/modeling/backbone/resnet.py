@@ -350,6 +350,11 @@ class BaseStem(nn.Module):
 
         out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
         in_channels = cfg.MODEL.RESNETS.STEM_IN_CHANNELS
+        # if cfg.MODEL.RGB_ON and cfg.MODEL.DEPTH_ON:
+        #     in_channels = cfg.MODEL.RESNETS.STEM_RGBDIN_CHANNELS
+        # if isrgb:#cfg.MODEL.RGB_ON and not cfg.MODEL.DEPTH_ON:#if isrgb:
+        #     in_channels = cfg.MODEL.RESNETS.STEM_IN_CHANNELS
+
 
         self.conv1 = Conv2d(
             in_channels, out_channels, kernel_size=7, stride=2, padding=3, bias=False
@@ -395,7 +400,7 @@ class BottleneckWithFixedBatchNorm(Bottleneck):
 class StemWithFixedBatchNorm(BaseStem):
     def __init__(self, cfg):
         super(StemWithFixedBatchNorm, self).__init__(
-            cfg, norm_func=FrozenBatchNorm2d
+            cfg, norm_func=FrozenBatchNorm2d,
         )
 
 
